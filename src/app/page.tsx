@@ -7,7 +7,7 @@ import Receive from './components/Receive';
 
 export default function Home() {
   const [wallet, setWallet] = useState<{ address: string; privateKey: string } | null>(null);
-  const [balance, setBalance] = useState<string>('0');
+  const [balance, setBalance] = useState<string>('0.0000000000');
   const [loadingBalance, setLoadingBalance] = useState<boolean>(false);
   const [balanceError, setBalanceError] = useState<string | null>(null);
 
@@ -18,7 +18,9 @@ export default function Home() {
     try {
       const provider = new ethers.JsonRpcProvider('https://ethereum.public.blockpi.network/v1/rpc/public');
       const balanceInWei = await provider.getBalance(wallet.address);
-      setBalance(ethers.formatEther(balanceInWei));
+      const etherString = ethers.formatEther(balanceInWei);
+      const formattedBalance = parseFloat(etherString).toFixed(10);
+      setBalance(formattedBalance);
     } catch (error) {
       console.error("Failed to fetch balance:", error);
       setBalanceError('Could not fetch balance.');
