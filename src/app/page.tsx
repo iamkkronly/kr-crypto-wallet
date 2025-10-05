@@ -8,6 +8,7 @@ import Login from './components/Login';
 
 export default function Home() {
   const [wallet, setWallet] = useState<{ address: string; privateKey: string } | null>(null);
+  const [defaultPrivateKey, setDefaultPrivateKey] = useState<string | null>(null);
   const [balance, setBalance] = useState<string>('0.0000000000');
   const [loadingBalance, setLoadingBalance] = useState<boolean>(false);
   const [balanceError, setBalanceError] = useState<string | null>(null);
@@ -18,8 +19,14 @@ export default function Home() {
       setWallet({ address: walletInstance.address, privateKey: walletInstance.privateKey });
     } catch (error) {
       console.error("Failed to load wallet from private key:", error);
-      // This case should be handled in the Login component, but as a fallback:
       alert("Invalid private key provided.");
+    }
+  };
+
+  const handleLogout = () => {
+    if (defaultPrivateKey) {
+      const walletInstance = new ethers.Wallet(defaultPrivateKey);
+      setWallet({ address: walletInstance.address, privateKey: walletInstance.privateKey });
     }
   };
 
@@ -42,6 +49,28 @@ export default function Home() {
   }, [wallet]);
 
   useEffect(() => {
+    const loadOrCreateWallet = () => {
+      const savedPrivateKey = localStorage.getItem('walletPrivateKey');
+      let walletInstance;
+      if (savedPrivateKey) {
+        try {
+          walletInstance = new ethers.Wallet(savedPrivateKey);
+        } catch (error) {
+          console.error("Failed to load wallet from saved private key, creating a new one:", error);
+          walletInstance = ethers.Wallet.createRandom();
+          localStorage.setItem('walletPrivateKey', walletInstance.privateKey);
+        }
+      } else {
+        walletInstance = ethers.Wallet.createRandom();
+        localStorage.setItem('walletPrivateKey', walletInstance.privateKey);
+      }
+      setDefaultPrivateKey(walletInstance.privateKey);
+      setWallet({ address: walletInstance.address, privateKey: walletInstance.privateKey });
+    };
+    loadOrCreateWallet();
+  }, []);
+
+  useEffect(() => {
     if (wallet) {
       fetchBalance();
     }
@@ -50,12 +79,20 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-gray-50">
       <h1 className="text-4xl font-bold mb-8 text-gray-800">Crypto Wallet</h1>
-      {!wallet ? (
-        <Login onLogin={handleLogin} />
-      ) : (
+      {wallet ? (
         <div className="w-full max-w-2xl">
           <div className="p-4 mb-4 border rounded-lg text-center bg-white shadow">
-            <h2 className="text-2xl font-bold mb-4">Your Wallet</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">Your Wallet</h2>
+              {defaultPrivateKey && wallet.privateKey !== defaultPrivateKey && (
+                <button
+                  onClick={handleLogout}
+                  className="text-sm bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-3 rounded"
+                >
+                  Return to Default Wallet
+                </button>
+              )}
+            </div>
             <div className="space-y-4">
               <div>
                 <h3 className="text-lg font-semibold">Balance</h3>
@@ -78,13 +115,26 @@ export default function Home() {
                 <h3 className="text-lg font-semibold">Public Address</h3>
                 <p className="text-sm break-all bg-gray-100 p-2 rounded">{wallet.address}</p>
               </div>
+               <div>
+                <h3 className="text-lg font-semibold">Private Key (Keep Safe!)</h3>
+                <p className="text-sm break-all bg-gray-100 p-2 rounded">{wallet.privateKey}</p>
+              </div>
+              <div className="p-4 mt-4 border-l-4 border-red-500 bg-red-100 text-red-700">
+                <h4 className="font-bold">Security Warning!</h4>
+                <p>This private key is displayed for educational purposes only. Do not use this wallet for real funds. Anyone with this private key can access your wallet and steal your funds.</p>
+              </div>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Receive address={wallet.address} />
             <Send privateKey={wallet.privateKey} />
           </div>
+          <div className="mt-12 w-full">
+            <Login onLogin={handleLogin} />
+          </div>
         </div>
+      ) : (
+         <p>Loading wallet...</p>
       )}
     </main>
   );
