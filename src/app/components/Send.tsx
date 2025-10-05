@@ -33,7 +33,7 @@ const Send = ({ privateKey }: SendProps) => {
       // Connect to a public Ethereum provider.
       // For a real application, you would use a reliable provider like Infura or Alchemy.
       // Using a public RPC URL is necessary for the app to work when deployed on Vercel.
-      const provider = new ethers.JsonRpcProvider('https://rpc.ankr.com/eth');
+      const provider = new ethers.JsonRpcProvider('https://ethereum.public.blockpi.network/v1/rpc/public');
       const wallet = new ethers.Wallet(privateKey, provider);
 
       // Create and send the transaction.

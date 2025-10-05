@@ -9,17 +9,19 @@ export default function Home() {
   const [wallet, setWallet] = useState<{ address: string; privateKey: string } | null>(null);
   const [balance, setBalance] = useState<string>('0');
   const [loadingBalance, setLoadingBalance] = useState<boolean>(false);
+  const [balanceError, setBalanceError] = useState<string | null>(null);
 
   const fetchBalance = useCallback(async () => {
     if (!wallet) return;
     setLoadingBalance(true);
+    setBalanceError(null);
     try {
-      const provider = new ethers.JsonRpcProvider('https://rpc.ankr.com/eth');
+      const provider = new ethers.JsonRpcProvider('https://ethereum.public.blockpi.network/v1/rpc/public');
       const balanceInWei = await provider.getBalance(wallet.address);
       setBalance(ethers.formatEther(balanceInWei));
     } catch (error) {
       console.error("Failed to fetch balance:", error);
-      setBalance('Error');
+      setBalanceError('Could not fetch balance.');
     } finally {
       setLoadingBalance(false);
     }
@@ -66,7 +68,11 @@ export default function Home() {
               <div>
                 <h3 className="text-lg font-semibold">Balance</h3>
                 <p className="text-lg bg-gray-100 p-2 rounded font-mono">
-                  {loadingBalance ? 'Loading...' : `${balance} ETH`}
+                  {loadingBalance
+                    ? 'Loading...'
+                    : balanceError
+                    ? <span className="text-red-500">{balanceError}</span>
+                    : `${balance} ETH`}
                 </p>
                 <button
                   onClick={fetchBalance}
