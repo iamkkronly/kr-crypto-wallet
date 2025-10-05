@@ -8,7 +8,6 @@ import Login from './components/Login';
 
 export default function Home() {
   const [wallet, setWallet] = useState<{ address: string; privateKey: string } | null>(null);
-  const [defaultPrivateKey, setDefaultPrivateKey] = useState<string | null>(null);
   const [balance, setBalance] = useState<string>('0.0000000000');
   const [loadingBalance, setLoadingBalance] = useState<boolean>(false);
   const [balanceError, setBalanceError] = useState<string | null>(null);
@@ -16,17 +15,12 @@ export default function Home() {
   const handleLogin = (privateKey: string) => {
     try {
       const walletInstance = new ethers.Wallet(privateKey);
+      // Save the new private key to make it the default for next time
+      localStorage.setItem('walletPrivateKey', walletInstance.privateKey);
       setWallet({ address: walletInstance.address, privateKey: walletInstance.privateKey });
     } catch (error) {
       console.error("Failed to load wallet from private key:", error);
       alert("Invalid private key provided.");
-    }
-  };
-
-  const handleLogout = () => {
-    if (defaultPrivateKey) {
-      const walletInstance = new ethers.Wallet(defaultPrivateKey);
-      setWallet({ address: walletInstance.address, privateKey: walletInstance.privateKey });
     }
   };
 
@@ -64,7 +58,6 @@ export default function Home() {
         walletInstance = ethers.Wallet.createRandom();
         localStorage.setItem('walletPrivateKey', walletInstance.privateKey);
       }
-      setDefaultPrivateKey(walletInstance.privateKey);
       setWallet({ address: walletInstance.address, privateKey: walletInstance.privateKey });
     };
     loadOrCreateWallet();
@@ -82,17 +75,7 @@ export default function Home() {
       {wallet ? (
         <div className="w-full max-w-2xl">
           <div className="p-4 mb-4 border rounded-lg text-center bg-white shadow">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold">Your Wallet</h2>
-              {defaultPrivateKey && wallet.privateKey !== defaultPrivateKey && (
-                <button
-                  onClick={handleLogout}
-                  className="text-sm bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-3 rounded"
-                >
-                  Return to Default Wallet
-                </button>
-              )}
-            </div>
+            <h2 className="text-2xl font-bold mb-4">Your Wallet</h2>
             <div className="space-y-4">
               <div>
                 <h3 className="text-lg font-semibold">Balance</h3>
