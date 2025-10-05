@@ -1,6 +1,6 @@
 'use client';
 
-import { QRCode } from 'qrcode.react';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface ReceiveProps {
   address: string;
@@ -12,7 +12,7 @@ const Receive = ({ address }: ReceiveProps) => {
       <h3 className="text-lg font-bold mb-2">Receive Funds</h3>
       <p className="mb-4">Share your address or QR code to receive funds.</p>
       <div className="flex items-center justify-center mb-4">
-        <QRCode value={address} size={128} />
+        <QRCodeSVG value={address} size={128} />
       </div>
       <p className="text-sm text-center break-all">{address}</p>
     </div>
