@@ -6,11 +6,11 @@ import Send from './components/Send';
 import Receive from './components/Receive';
 
 export default function Home() {
-  const [wallet, setWallet] = useState<ethers.Wallet | null>(null);
+  const [wallet, setWallet] = useState<{ address: string; privateKey: string } | null>(null);
 
   useEffect(() => {
     const newWallet = ethers.Wallet.createRandom();
-    setWallet(newWallet);
+    setWallet({ address: newWallet.address, privateKey: newWallet.privateKey });
   }, []);
 
   return (
