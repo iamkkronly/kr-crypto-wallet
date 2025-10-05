@@ -23,8 +23,12 @@ const Send = () => {
         setSuccess(`Transaction sent! Hash: ${tx.hash}`);
         setRecipient('');
         setAmount('');
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError('An unknown error occurred.');
+        }
       }
     } else {
       setError('Please fill in all fields and ensure MetaMask is connected.');

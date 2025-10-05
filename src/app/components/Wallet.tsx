@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ethers } from 'ethers';
 import Receive from './Receive';
 import Send from './Send';
@@ -21,8 +21,12 @@ const Wallet = () => {
         setAccount(address);
         const balance = await provider.getBalance(address);
         setBalance(ethers.formatEther(balance));
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError('An unknown error occurred.');
+        }
       }
     } else {
       setError('Please install MetaMask!');
